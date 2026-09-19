@@ -218,22 +218,75 @@ html,body{
 }
 .fort-popup .leaflet-popup-close-button:hover{color:var(--accent) !important;}
 
+/* ===== ФОТО В ПОПАПЕ ===== */
 .pop-photo{
-  height:96px;
+  position:relative;
+  height:150px;
+  border-bottom:1px solid var(--line);
+  border-radius:12px 12px 0 0;
+  overflow:hidden;
+  background:linear-gradient(180deg,#2b2318,#1a1410);
+  cursor:zoom-in;
+}
+.pop-photo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  transition:transform .4s ease, filter .4s ease;
+  filter:saturate(.85) contrast(1.05) brightness(.92);
+}
+.pop-photo:hover img{
+  transform:scale(1.06);
+  filter:saturate(1) contrast(1.08) brightness(1);
+}
+.pop-photo::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(13,11,9,0) 45%,rgba(13,11,9,.75) 100%);
+  pointer-events:none;
+}
+.pop-photo .photo-label{
+  position:absolute;
+  left:10px;bottom:8px;
+  z-index:2;
+  font-size:9.5px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:#d8c8a4;
+  text-shadow:0 1px 4px rgba(0,0,0,.9);
+  font-family:Arial,Helvetica,sans-serif;
+  pointer-events:none;
+}
+.pop-photo .photo-num{
+  position:absolute;
+  top:8px;left:10px;
+  z-index:2;
+  padding:2px 7px;
+  font-family:"Georgia",serif;
+  font-size:12px;
+  font-weight:700;
+  color:#17120d;
+  background:var(--accent);
+  border-radius:5px;
+  box-shadow:0 2px 8px rgba(0,0,0,.6);
+  pointer-events:none;
+}
+.pop-photo.is-fallback{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:4px;
   background:
     repeating-linear-gradient(45deg,rgba(61,50,38,.35) 0 10px,rgba(45,36,27,.35) 10px 20px),
     linear-gradient(180deg,#2b2318,#1a1410);
-  border-bottom:1px dashed var(--line);
-  border-radius:12px 12px 0 0;
   color:#8a7d63;
-  font-size:11px;
-  letter-spacing:.08em;
-  text-transform:uppercase;
+  cursor:default;
 }
-.pop-photo span{font-size:22px;opacity:.75;}
-.pop-photo small{font-size:9.5px;letter-spacing:.1em;color:#6f6450;text-transform:uppercase;}
+.pop-photo.is-fallback::after{display:none;}
+.pop-photo.is-fallback span{font-size:26px;opacity:.7;}
+.pop-photo.is-fallback small{
+  font-size:9.5px;letter-spacing:.1em;color:#6f6450;text-transform:uppercase;
+}
 
 .pop-body{padding:12px 14px 14px;}
 .pop-head{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;}
@@ -363,6 +416,55 @@ html,body{
   font-size:9.5px;
 }
 
+/* ===== ЛАЙТБОКС ===== */
+.lightbox{
+  position:fixed;
+  inset:0;
+  z-index:5000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(6,5,4,.94);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  padding:24px;
+  animation:lb-fade .25s ease;
+}
+.lightbox.open{display:flex;}
+.lightbox img{
+  max-width:min(1100px,100%);
+  max-height:88vh;
+  border:1px solid var(--line);
+  border-radius:10px;
+  box-shadow:0 24px 70px rgba(0,0,0,.9);
+  object-fit:contain;
+}
+.lightbox-close{
+  position:absolute;
+  top:16px;right:16px;
+  width:38px;height:38px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(61,50,38,.7);
+  border:1px solid var(--line);
+  border-radius:9px;
+  color:var(--beige);
+  font-size:16px;
+  cursor:pointer;
+  transition:.15s;
+}
+.lightbox-close:hover{background:rgba(139,107,67,.9);color:#fff;}
+.lightbox-caption{
+  position:absolute;
+  left:0;right:0;bottom:18px;
+  text-align:center;
+  font-size:12.5px;
+  letter-spacing:.05em;
+  color:#c3b593;
+  text-shadow:0 1px 6px #000;
+  padding:0 20px;
+}
+@keyframes lb-fade{from{opacity:0;}to{opacity:1;}}
+
 /* ================= МОБИЛЬНАЯ АДАПТАЦИЯ ================= */
 @media (max-width:760px){
   .panel{
@@ -377,7 +479,7 @@ html,body{
   .chip{font-size:11px;padding:8px 8px;flex:1 1 40%;}
 
   .fort-popup .leaflet-popup-content-wrapper{border-radius:12px;}
-  .pop-photo{height:80px;}
+  .pop-photo{height:120px;}
   .pop-body{padding:11px 12px 13px;}
   .pop-head h3{font-size:13.5px;}
   .pop-desc{font-size:12px;}
@@ -396,7 +498,7 @@ html,body{
 
 @media (max-height:520px){
   .panel{max-height:calc(100vh - 16px);}
-  .pop-photo{height:64px;}
+  .pop-photo{height:100px;}
 }
 </style>
 </head>
@@ -432,8 +534,9 @@ html,body{
       <div class="legend-row"><span class="dot start"></span> Центр Бреста (старт)</div>
       <div class="legend-row"><span class="line-sample"></span> Маршрут до форта</div>
       <p class="hint">
-        Нажмите на маркер форта, чтобы увидеть описание, год постройки
-        и построить маршрут от центра города.
+        Нажмите на маркер форта, чтобы увидеть описание, год постройки,
+        фотографию и построить маршрут от центра города.
+        Клик по фото открывает его в полном размере.
       </p>
     </div>
   </div>
@@ -446,6 +549,13 @@ html,body{
     <span id="riMeta">—</span>
   </div>
   <button class="ri-close" id="riClose" title="Убрать маршрут">✕</button>
+</div>
+
+<!-- ======================= ЛАЙТБОКС ======================= -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lbClose" title="Закрыть (Esc)">✕</button>
+  <img id="lbImg" src="" alt="" />
+  <div class="lightbox-caption" id="lbCaption"></div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -462,6 +572,8 @@ const STATUS = {
   abandoned: { label: 'Заброшен'  }
 };
 
+/* Поле photo — путь к локальному файлу (например, img/fort-1.jpg).
+   Если файла нет — сработает автоматический фолбэк на заглушку. */
 const FORTS = [
   {
     id: 1, num: '1',
@@ -469,6 +581,8 @@ const FORTS = [
     lat: 52.1050, lng: 23.7610,
     years: '1880–1883',
     status: 'preserved',
+    photo: 'img/fort-1.jpg',
+    photoCaption: 'Горжевая казарма форта №1',
     desc: 'Первый форт внешнего обвода Брест-Литовской крепости, возведённый для прикрытия северо-восточного направления. Кирпично-бетонные казематы, горжевая казарма и валы частично уцелели до наших дней. Объект охраняется как памятник фортификационного искусства.'
   },
   {
@@ -477,6 +591,8 @@ const FORTS = [
     lat: 52.0830, lng: 23.7870,
     years: '1881–1884',
     status: 'ruins',
+    photo: 'img/fort-2.jpg',
+    photoCaption: 'Руины форта №2',
     desc: 'Форт восточного сектора обороны, построенный по типовому проекту 1879 года. В годы Первой мировой войны вёл артиллерийский огонь по наступающим австро-германским войскам. Ныне — живописные руины среди зарослей и оплывших земляных валов.'
   },
   {
@@ -485,6 +601,8 @@ const FORTS = [
     lat: 52.0720, lng: 23.8200,
     years: '1882–1885',
     status: 'ruins',
+    photo: 'img/fort-3.jpg',
+    photoCaption: 'Оплывшие валы форта №3',
     desc: 'Один из фортов восточного фронта крепости, усиленный бетонными казематами в начале XX века. Сильно пострадал в 1915 году при отходе русских войск. Сохранились фрагменты стен, пороховых погребов и крепостных рвов.'
   },
   {
@@ -493,6 +611,8 @@ const FORTS = [
     lat: 52.0550, lng: 23.7800,
     years: '1882–1886',
     status: 'preserved',
+    photo: 'img/fort-4.jpg',
+    photoCaption: 'Казарма форта №4',
     desc: 'Форт юго-восточного сектора, названный в честь генерал-фельдмаршала Ф. В. фон Берга. Отличается хорошо сохранившейся горжевой казармой и системой потерн. Используется как площадка для исторических реконструкций.'
   },
   {
@@ -501,6 +621,8 @@ const FORTS = [
     lat: 52.0390, lng: 23.7560,
     years: '1883–1886',
     status: 'abandoned',
+    photo: 'img/fort-5.jpg',
+    photoCaption: 'Внутренние казематы форта №5',
     desc: 'Самый крупный форт южного обвода, возведённый с применением бетона и броневых наблюдательных постов. Прикрывал подступы к Тереспольскому укреплению. Сегодня заброшен, внутренние помещения частично затоплены.'
   },
   {
@@ -509,6 +631,8 @@ const FORTS = [
     lat: 52.0280, lng: 23.7100,
     years: '1884–1887',
     status: 'ruins',
+    photo: 'img/fort-6.jpg',
+    photoCaption: 'Руины казармы форта №6',
     desc: 'Форт юго-западного направления, названный в честь генерала от кавалерии П. П. фон дер Палена. В 1915 году гарнизон оставил укрепление, взорвав часть казематов. До наших дней дошли руины казармы и оплывшие валы.'
   },
   {
@@ -517,6 +641,8 @@ const FORTS = [
     lat: 52.0450, lng: 23.6750,
     years: '1885–1888',
     status: 'abandoned',
+    photo: 'img/fort-7.jpg',
+    photoCaption: 'Остатки кирпичной кладки форта №7',
     desc: 'Форт западного сектора, стоявший на берегу Мухавца у Заречного предместья. Служил для обороны железнодорожного моста и дамбы. Ныне заброшен, сохранились отдельные казематы и остатки кирпичной кладки.'
   },
   {
@@ -525,6 +651,8 @@ const FORTS = [
     lat: 52.0650, lng: 23.6450,
     years: '1886–1889',
     status: 'preserved',
+    photo: 'img/fort-8.jpg',
+    photoCaption: 'Артиллерийские позиции форта №8',
     desc: 'Форт юго-западного фронта, замыкавший внешний обвод крепости. Имел мощные бетонные укрытия и артиллерийские позиции. Сильно разрушен в ходе боёв XX века, ныне — руины среди лесопарковой зоны.'
   }
 ];
@@ -587,12 +715,22 @@ function makeFortIcon(fort) {
 }
 
 function popupHtml(f) {
+  const photoSrc = f.photo || '';
+  const hasPhoto = !!photoSrc;
   return `
     <div class="pop">
-      <div class="pop-photo" title="Здесь будет фотография форта">
-        <span>📷</span>
-        <small>место для фотографии</small>
-      </div>
+      ${ hasPhoto
+        ? `<div class="pop-photo" data-full="${photoSrc}" title="Нажмите, чтобы увеличить">
+             <span class="photo-num">№ ${f.num}</span>
+             <img src="${photoSrc}" alt="${f.name}" loading="lazy"
+                  onerror="this.parentElement.classList.add('is-fallback'); this.remove();" />
+             <span class="photo-label">${f.photoCaption || 'Форт Брестской крепости'}</span>
+           </div>`
+        : `<div class="pop-photo is-fallback">
+             <span>📷</span>
+             <small>фотография недоступна</small>
+           </div>`
+      }
       <div class="pop-body">
         <div class="pop-head">
           <h3>${f.name}</h3>
@@ -632,16 +770,28 @@ FORTS.forEach(fort => {
   markersGroup.addLayer(marker);
 });
 
-/* Кнопка «Маршрут» внутри попапа */
+/* Кнопка «Маршрут» и клик по фото внутри попапа */
 map.on('popupopen', e => {
   const el = e.popup.getElement();
-  const btn = el && el.querySelector('.btn-route');
-  if (!btn) return;
+  if (!el) return;
 
-  btn.addEventListener('click', () => {
-    const fort = FORTS.find(f => f.id === Number(btn.dataset.id));
-    if (fort) buildRoute(fort);
-  });
+  const btn = el.querySelector('.btn-route');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const fort = FORTS.find(f => f.id === Number(btn.dataset.id));
+      if (fort) buildRoute(fort);
+    });
+  }
+
+  const photo = el.querySelector('.pop-photo[data-full]');
+  if (photo) {
+    photo.addEventListener('click', () => {
+      openLightbox(
+        photo.dataset.full,
+        photo.querySelector('.photo-label')?.textContent || ''
+      );
+    });
+  }
 });
 
 /* =========================================================================
@@ -701,7 +851,6 @@ function clearRoute() {
 }
 
 document.getElementById('riClose').addEventListener('click', clearRoute);
-map.on('popupclose', () => { /* маршрут остаётся, пока пользователь не закроет */ });
 
 async function buildRoute(fort) {
   clearRoute();
@@ -733,7 +882,7 @@ async function buildRoute(fort) {
     /* Офлайн / сервис недоступен — рисуем прямую линию */
     fallback = true;
     coords = [from, to];
-    distance = map.distance(from, to) * 1.25; // грубая поправка на дороги
+    distance = map.distance(from, to) * 1.25;
     duration = null;
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '🧭 Маршрут от центра Бреста'; }
@@ -776,7 +925,7 @@ async function buildRoute(fort) {
 }
 
 /* =========================================================================
-   6. СВОРАЧИВАНИЕ ПАНЕЛИ (мобильные)
+   6. СВОРАЧИВАНИЕ ПАНЕЛИ
    ========================================================================= */
 
 const panel = document.getElementById('panel');
@@ -791,20 +940,51 @@ panelToggle.addEventListener('click', () => {
   updateToggleIcon();
 });
 
-/* На маленьких экранах панель стартует свёрнутой */
 if (window.innerWidth <= 760) {
   panel.classList.add('collapsed');
 }
 updateToggleIcon();
 
 /* =========================================================================
-   7. ПРОЧЕЕ
+   7. ЛАЙТБОКС ДЛЯ ФОТОГРАФИЙ
    ========================================================================= */
 
-/* Закрываем попап и панель маршрута по Esc */
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { map.closePopup(); }
+const lightbox   = document.getElementById('lightbox');
+const lbImg      = document.getElementById('lbImg');
+const lbCaption  = document.getElementById('lbCaption');
+const lbClose    = document.getElementById('lbClose');
+
+function openLightbox(src, caption) {
+  lbImg.src = src;
+  lbImg.alt = caption || '';
+  lbCaption.textContent = caption || '';
+  lightbox.classList.add('open');
+}
+
+function closeLightbox() {
+  lightbox.classList.remove('open');
+  lbImg.src = '';
+}
+
+lbClose.addEventListener('click', closeLightbox);
+lightbox.addEventListener('click', e => {
+  if (e.target === lightbox) closeLightbox();
 });
+
+/* =========================================================================
+   8. ПРОЧЕЕ
+   ========================================================================= */
+
+/* Esc: закрывает лайтбокс, иначе — попап */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (lightbox.classList.contains('open')) {
+    closeLightbox();
+    e.stopPropagation();
+    return;
+  }
+  map.closePopup();
+}, true);
 
 /* Пересчёт размеров карты при повороте экрана */
 window.addEventListener('orientationchange', () => {
